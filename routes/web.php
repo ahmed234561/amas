@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompareController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\CurrencyController;
@@ -317,6 +318,7 @@ Route::group(['middleware' => ['customer', 'verified', 'unbanned']], function ()
 
     // Support Ticket
     Route::resource('support_ticket', SupportTicketController::class);
+    Route::resource('clients', ClientController::class);
     Route::post('support_ticket/reply', [SupportTicketController::class, 'seller_store'])->name('support_ticket.seller_store');
 
     // Customer Package

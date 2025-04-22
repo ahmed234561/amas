@@ -195,6 +195,8 @@ $(document).ready(function() {
         @endif
 
         var quantityInput = $('#product-row-' + productId + ' .quantity-input');
+        var pointsType = $('#product-row-' + productId + ' .target_points');
+        var client_id = $('#product-row-' + productId + ' .client_id');
         var quantity = parseInt(quantityInput.val()) || 1;
 
         if(isNaN(quantity) || quantity < 1) {
@@ -209,7 +211,9 @@ $(document).ready(function() {
             data: {
                 _token: '{{ csrf_token() }}',
                 id: productId,
-                quantity: quantity
+                quantity: quantity,
+                client_id: client_id.val(),
+                target_points: pointsType.val()
             },
             success: function(data) {
                 $('.c-preloader').hide();

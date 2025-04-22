@@ -96,9 +96,17 @@ class InvoiceController extends Controller
 
         $config = [];
 
-        $order = Order::findOrFail($id);
+        $order = Order::with('orderDetails', 'user', 'orderDetails.client')->findOrFail($id);
+        $groupedOrderDetails = $order->orderDetails->groupBy(function ($detail) use($order) {
+            if ($detail->client_id) {
+                return optional($detail->client)->name ?? 'Unknown Client';
+            } else {
+                return optional($order->user)->name ?? 'Unknown User';
+            }
+        });
         return PDF::loadView('backend.invoices.invoice', [
             'order' => $order,
+            'groupedOrderDetails'=> $groupedOrderDetails,
             'font_family' => $font_family,
             'direction' => $direction,
             'text_align' => $text_align,

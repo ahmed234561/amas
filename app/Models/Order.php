@@ -56,6 +56,7 @@ class Order extends Model
         return $this->hasMany(ProxyPayment::class)->select('reference_id');
     }
 
+
     public function additional_info_data($class = "")
     {
         $jsonData = json_decode($this->additional_info, true);

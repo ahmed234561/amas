@@ -756,41 +756,7 @@
                                     </div>
                                 @endif
                             </div>
-                            <div class="card-header p-4 border-bottom-0">
-                                <h3 class="fs-16 fw-700 text-dark mb-0">
-                                    {{ translate('Select type of points') }}
-                                </h3>
-                            </div>
-                            <div class="card-body text-center px-4 pt-0">
-                                <div class="row gutters-10">
-                                    <div class="col-6 col-xl-3 col-md-4">
-                                        <label class="aiz-megabox d-block mb-3">
-                                            <input class="type_of_points" type="radio"
-                                                name="type_of_points" value="saudian_points">
-                                            <span class="d-block aiz-megabox-elem rounded-0 p-3">
 
-                                                <span class="d-block text-center">
-                                                    <span
-                                                        class="d-block fw-600 fs-15">{{ translate('Saudian Points') }}</span>
-                                                </span>
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="col-6 col-xl-3 col-md-4">
-                                        <label class="aiz-megabox d-block mb-3">
-                                            <input class="type_of_points" type="radio"
-                                                name="type_of_points" value="malaysian_points">
-                                            <span class="d-block aiz-megabox-elem rounded-0 p-3">
-
-                                                <span class="d-block text-center">
-                                                    <span
-                                                        class="d-block fw-600 fs-15">{{ translate('Malaysian Points') }}</span>
-                                                </span>
-                                            </span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
 
 
 

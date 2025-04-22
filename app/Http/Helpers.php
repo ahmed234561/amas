@@ -2150,18 +2150,15 @@ if (!function_exists('get_user_last_wallet_recharge')) {
 if (!function_exists('get_user_total_club_point')) {
     function get_user_total_club_point()
     {
-        $club_point_query = ClubPoint::query();
-        return $club_point_query->where('user_id', Auth::user()->id)->where('convert_status', 0)
-        ->where('points_type', '=', 'saudian_points')->sum('points');
+        return Auth::user()->saudi_points;
     }
 }
 // Get user total Club point
 if (!function_exists('get_user_total_malaysian_point')) {
     function get_user_total_malaysian_point()
     {
-        $club_point_query = ClubPoint::query();
-        return $club_point_query->where('user_id', Auth::user()->id)->where('convert_status', 0)
-        ->where('points_type', '=', 'malaysian_points')->sum('points');
+        return Auth::user()->malaysian_points;
+
     }
 }
 

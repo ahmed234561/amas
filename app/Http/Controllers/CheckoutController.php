@@ -92,7 +92,7 @@ class CheckoutController extends Controller
             $order->payment_details = $payment;
             $order->save();
 
-            calculateCommissionAffilationClubPoint($order);
+            // calculateCommissionAffilationClubPoint($order);
         }
         Session::put('combined_order_id', $combined_order_id);
         return redirect()->route('order_confirmed');

@@ -98,16 +98,34 @@
                         </div>
                         <div class="card-body">
                             <div class="mb-3">
-                                <form action="{{ route('club_points.index') }}" method="GET">
+                                <form action="{{ route('convert_point_into_wallet') }}" method="post">
+                                    @csrf
                                     <div class="row">
-                                        <div class="col-lg-10">
+                                        <div class="col-lg-4">
                                             <input type="text" class="form-control PointsWantConverted"  name="points"
                                                 placeholder="{{ translate('Points Want Converted') }}"
                                                 value="{{ request()->input('points') }}">
                                         </div>
+                                        <div class="col-lg-3">
+                                            <select name="convert_to" class="convert_to form-control">
+                                                <option value="me">{{ translate('Me') }}</option>
+                                                @foreach (\App\Models\Client::get() as $client)
+                                                    <option value="{{$client->id}}">
+                                                        {{$client->name}}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-3">
+                                            <select name="points_type" class="form-control points_type">
+                                                <option>{{ translate('Points Type') }}</option>
+                                                <option value="saudi_points">{{ translate('Saudi Points') }}</option>
+                                                <option value="malaysian_points">{{ translate('Malaysian Points') }}</option>
+                                            </select>
+                                        </div>
                                         <div class="col-lg-2">
                                             <button type="button"
-                                                class="btn btn-primary btn-block" onclick="convert_point({{ $club_point->id }})" >{{ translate('convert') }}</button>
+                                                class="btn btn-primary btn-block" onclick="convert_point()" >{{ translate('convert') }}</button>
                                         </div>
                                     </div>
                                 </form>
@@ -192,15 +210,16 @@
         function convert_point(el) {
             $.post('{{ route('convert_point_into_wallet') }}', {
                 _token: '{{ csrf_token() }}',
-                el: el
+                points_type: $('.points_type').val(),
+                convert_to: $('.convert_to').val(),
                 points: $('.PointsWantConverted').val()
             }, function(data) {
-                if (data == 1) {
+                if (data.success) {
                     location.reload();
                     AIZ.plugins.notify('success',
                         '{{ translate('Convert has been done successfully Check your Wallets') }}');
                 } else {
-                    AIZ.plugins.notify('danger', '{{ translate('Something went wrong') }}');
+                    AIZ.plugins.notify('danger', data.message);
                 }
             });
         }

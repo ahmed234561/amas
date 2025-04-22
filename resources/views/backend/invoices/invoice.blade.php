@@ -88,14 +88,14 @@
 				</tr>
 				<tr>
 					<td class="gry-color small"></td>
-					<td class="text-right small">
+				{{-- 	<td class="text-right small">
                         <span class="gry-color small">
                             {{  translate('Payment method') }}:
                         </span>
                         <span class="strong">
                             {{ translate(ucfirst(str_replace('_', ' ', $order->payment_type))) }}
                         </span>
-                    </td>
+                    </td> --}}
 				</tr>
 			</table>
 
@@ -115,7 +115,14 @@
 		</div>
 
 	    <div style="padding: 1rem;">
-			<table class="padding text-left small border-bottom">
+			@foreach ($groupedOrderDetails as $buyerName => $HasOrderDetails)
+            @php
+                   $clientTotalPrice = 0;
+                        $clientTotalMalaysianPoints = 0;
+                        $clientTotalSaudiPoints = 0;
+            @endphp
+            <h3>{{$buyerName}}</h3>
+            <table class="padding text-left small border-bottom">
 				<thead>
 	                <tr class="gry-color" style="background: #eceff4;">
 	                    <th width="35%" class="text-left">{{ translate('Product Name') }}</th>
@@ -124,10 +131,19 @@
 	                    <th width="15%" class="text-left">{{ translate('Unit Price') }}</th>
 	                    <th width="10%" class="text-left">{{ translate('Tax') }}</th>
 	                    <th width="15%" class="text-right">{{ translate('Total') }}</th>
+	                    <th width="15%" class="text-right">{{ translate('Points Type') }}</th>
+	                    <th width="15%" class="text-right">{{ translate('Points') }}</th>
 	                </tr>
 				</thead>
 				<tbody class="strong">
-	                @foreach ($order->orderDetails as $key => $orderDetail)
+	                @foreach ($HasOrderDetails as $key => $orderDetail)
+                    @php
+
+
+                        $clientTotalPrice += $orderDetail->price+$orderDetail->tax;
+                        $clientTotalSaudiPoints += $orderDetail->earn_point;
+                        $clientTotalMalaysianPoints += $orderDetail->malaysian_points;
+                    @endphp
 		                @if ($orderDetail->product != null)
 							<tr class="">
 								<td>
@@ -164,13 +180,40 @@
 								<td class="currency">{{ single_price($orderDetail->price/$orderDetail->quantity) }}</td>
 								<td class="currency">{{ single_price($orderDetail->tax/$orderDetail->quantity) }}</td>
 			                    <td class="text-right currency">{{ single_price($orderDetail->price+$orderDetail->tax) }}</td>
+                                <td>{{$orderDetail->target_points}}</td>
+                                <td>{{$orderDetail->target_points == 'saudi' ? $orderDetail->earn_point : $orderDetail->malaysian_points}}</td>
 							</tr>
 		                @endif
 					@endforeach
 	            </tbody>
 			</table>
-		</div>
+            <div style="padding:0 1.5rem;">
 
+
+
+                <table class="text-right sm-padding small strong">
+                    <tbody>
+
+                        <tr>
+                            <th class="text-left strong">{{ translate('Total Price') }}</th>
+                            <td class="currency">{{ single_price($clientTotalPrice) }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-left strong">{{ translate('Total saudi points') }}</th>
+                            <td class="currency">{{ $clientTotalSaudiPoints }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-left strong">{{ translate('Total Malaysian Points') }}</th>
+                            <td class="currency">{{ $clientTotalMalaysianPoints }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            @endforeach
+		</div>
+        <br>
+        <hr>
+        <br>
 	    <div style="padding:0 1.5rem;">
 	        <table class="text-right sm-padding small strong">
 	        	<thead>
@@ -218,10 +261,10 @@
 		    </table>
 	    </div>
 
-        <div style="padding: 1rem;">
+       {{--  <div style="padding: 1rem;">
             {{ translate('Additional Info') }}
             {!! $order->additional_info_data('padding text-left small border-bottom') !!}
-        </div>
+        </div> --}}
 
 	</div>
 </body>

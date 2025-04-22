@@ -344,6 +344,20 @@
                     </a>
                 </li>
 
+                <li class="aiz-side-nav-item">
+                    <a href="{{ route('clients.index') }}"
+                        class="aiz-side-nav-link {{ areActiveRoutes(['clients.index', 'clients.show']) }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16.001" viewBox="0 0 16 16.001">
+                            <g id="Group_24764" data-name="Group 24764" transform="translate(-316 -1066)">
+                                <path id="Subtraction_184" data-name="Subtraction 184" d="M16427.109,902H16420a8.015,8.015,0,1,1,8-8,8.278,8.278,0,0,1-1.422,4.535l1.244,2.132a.81.81,0,0,1,0,.891A.791.791,0,0,1,16427.109,902ZM16420,887a7,7,0,1,0,0,14h6.283c.275,0,.414,0,.549-.111s-.209-.574-.34-.748l0,0-.018-.022-1.064-1.6A6.829,6.829,0,0,0,16427,894a6.964,6.964,0,0,0-7-7Z" transform="translate(-16096 180)" fill="#b5b5bf"/>
+                                <path id="Union_12" data-name="Union 12" d="M16414,895a1,1,0,1,1,1,1A1,1,0,0,1,16414,895Zm.5-2.5V891h.5a2,2,0,1,0-2-2h-1a3,3,0,1,1,3.5,2.958v.54a.5.5,0,1,1-1,0Zm-2.5-3.5h1a.5.5,0,1,1-1,0Z" transform="translate(-16090.998 183.001)" fill="#b5b5bf"/>
+                            </g>
+                        </svg>
+                        <span class="aiz-side-nav-text ml-3">{{ translate('Clients') }}</span>
+
+                    </a>
+                </li>
+
                 <!-- Manage Profile -->
                 <li class="aiz-side-nav-item">
                     <a href="{{ route('profile') }}" class="aiz-side-nav-link {{ areActiveRoutes(['profile']) }}">

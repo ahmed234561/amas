@@ -328,6 +328,35 @@
 
     @if ($detailedProduct->auction_product != 1)
         <form id="option-choice-form">
+            <div class="row no-gutters mt-3">
+                <div class="col-3">
+                    <div class="text-secondary fs-14 fw-400 mt-2 ">نوع النقاط</div>
+                </div>
+                <div class="col-9">
+                    <div class="aiz-radio-inline">
+                        <label class="aiz-megabox pl-0 mr-2 mb-0">
+                            <input
+                                type="radio"
+                                name="target_points"
+                                value="saudi">
+                            <span class="aiz-megabox-elem rounded-0 d-flex align-items-center justify-content-center py-1 px-3">
+                                النقاط السعودي
+                            </span>
+                        </label>
+                    </div>
+                    <div class="aiz-radio-inline">
+                        <label class="aiz-megabox pl-0 mr-2 mb-0">
+                            <input
+                                type="radio"
+                                name="target_points"
+                                value="malaysian">
+                            <span class="aiz-megabox-elem rounded-0 d-flex align-items-center justify-content-center py-1 px-3">
+                                النقاط الماليزي
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
             @csrf
             <input type="hidden" name="id" value="{{ $detailedProduct->id }}">
 

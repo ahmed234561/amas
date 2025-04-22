@@ -1,5 +1,8 @@
 
 <div class="row">
+    @php
+        $clients = \Illuminate\Support\Facades\DB::table('clients')->get();
+    @endphp
     <div class="col-12">
         <div class="table-responsive">
             <table class="table table-bordered table-striped align-middle">
@@ -10,7 +13,9 @@
                         <th class="text-center" style="width: 15%;">السعر</th>
                         <th class="text-center" style="width: 10%;">النقاط السعودي</th>
                         <th class="text-center" style="width: 10%;">النقاط الماليزي</th>
-                        <th class="text-center" style="width: 15%;">تفاصيل</th>
+                        <th class="text-center" style="width: 10%;">تفاصيل</th>
+                        <th class="text-center" style="width: 10%;">نوع النقاط</th>
+                        <th class="text-center" style="width: 10%;">الزبون</th>
                         <th class="text-center" style="width: 15%;">إضافة للسلة</th>
                     </tr>
                 </thead>
@@ -53,7 +58,20 @@
                                 تفاصيل المنتج
                             </button>
                         </td>
-
+                        <td class="text-center">
+                            <select name="target_points" class="form-control target_points">
+                                <option value="saudi">نقاط سعودي</option>
+                                <option value="malaysian">نقاط ماليزي</option>
+                            </select>
+                        </td>
+                        <td class="text-center">
+                            <select name="client_id" class="form-control client_id">
+                                <option value="">انا شخصيا</option>
+                                @foreach ($clients as $client)
+                                    <option value="{{ $client->id }}">{{ $client->name }}</option>
+                                @endforeach
+                                </select>
+                        </td>
                         <!-- زر إضافة إلى السلة -->
                         <td class="text-center">
                             @if (count(json_decode($product->choice_options)) == 0)

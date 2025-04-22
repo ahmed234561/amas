@@ -175,8 +175,8 @@ class OrderController extends Controller
             }
             array_push($product_ids, $cartItem);
             $seller_products[$product->user_id] = $product_ids;
-        }
 
+        }
         foreach ($seller_products as $seller_product) {
             $order = new Order;
             $order->combined_order_id = $combined_order->id;
@@ -198,7 +198,7 @@ class OrderController extends Controller
             $order->payment_status_viewed = '0';
             $order->code = date('Ymd-His') . rand(10, 99);
             $order->date = strtotime('now');
-            $order->points_type = $request->type_of_points;
+            // $order->points_type = $request->type_of_points;
             $order->save();
 
             $subtotal = 0;
@@ -236,6 +236,7 @@ class OrderController extends Controller
                 $order_detail->shipping_type = $cartItem['shipping_type'];
                 $order_detail->product_referral_code = $cartItem['product_referral_code'];
                 $order_detail->shipping_cost = $cartItem['shipping_cost'];
+                $order_detail->client_id = $cartItem->client_id;
 
                 $shipping += $order_detail->shipping_cost;
                 //End of storing shipping cost
@@ -243,8 +244,9 @@ class OrderController extends Controller
                 $order_detail->quantity = $cartItem['quantity'];
 
                 if (addon_is_activated('club_point')) {
-                    $order_detail->earn_point = $product->earn_point;
-                    $order_detail->malaysian_points = $product->malaysian_points;
+                    $order_detail->earn_point = $cartItem->saudi_points;
+                    $order_detail->malaysian_points = $cartItem->malaysian_points;
+                    $order_detail->target_points = $cartItem->target_points;
                 }
 
                 $order_detail->save();
@@ -543,7 +545,23 @@ class OrderController extends Controller
             $order->payment_status == 'paid' &&
             $order->commission_calculated == 0
         ) {
-            calculateCommissionAffilationClubPoint($order);
+            // Order Details
+            foreach ($order->orderDetails as $orderDetail) {
+                $user = User::where('id', $order->user_id)->first();
+                if($orderDetail->target_points == 'saudi'){
+                    $user->update([
+                        'saudi_points' => $user->saudi_points + $orderDetail->earn_point,
+                    ]);
+                } else if ($orderDetail->target_points == 'malaysian') {
+                    $user->update([
+                        'malaysian_points' => $user->malaysian_points + $orderDetail->malaysian_points,
+                    ]);
+                }
+
+            }
+            // dd(User::where('id', $order->user_id)->first());
+            $order->commission_calculated = '1';
+            $order->save();
         }
 
         //sends Notifications to user

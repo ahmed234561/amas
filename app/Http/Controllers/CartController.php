@@ -159,9 +159,9 @@ class CartController extends Controller
         $cart = Cart::firstOrNew([
             'variation' => $str,
             'user_id' => auth()->user()->id,
-            'product_id' => $request['id']
+            'product_id' => $request['id'],
         ]);
-
+        //dd($cart);
         if ($cart->exists && $product->digital == 0) {
             if ($product->auction_product == 1 && ($cart->product_id == $product->id)) {
                 return array(
@@ -188,6 +188,17 @@ class CartController extends Controller
         CartUtility::save_cart_data($cart, $product, $price, $tax, $quantity);
 
         $carts = Cart::where('user_id', auth()->user()->id)->get();
+        $cart->update([
+            'target_points' => $request['target_points'],
+            'malaysian_points' => $product->malaysian_points,
+            'saudi_points' => $product->earn_point,
+        ]);
+        if($request->client_id != null) {
+            $cart->update([
+                'client_id' => $request->client_id,
+            ]);
+        }
+        // dd($cart);
         return array(
             'status' => 1,
             'cart_count' => count($carts),

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use Illuminate\Http\Request;
 use App\Models\BusinessSetting;
 use App\Models\ClubPointDetail;
@@ -147,7 +148,63 @@ class ClubPointController extends Controller
 
     public function convert_point_into_wallet(Request $request)
     {
-        $club_point = ClubPoint::findOrFail($request->el);
+        $user = Auth::user();
+
+        if($request->points_type == 'saudi_points') {
+            if($user->saudi_points < $request->points) {
+                return response()->json([
+                    'success'   => false,
+                    'message'   => 'لا تمتلك ما يكفي في رصيد نقاطك السعودي'
+                ]);
+            }
+        } else if($request->points_type == 'malaysian_points') {
+            if($user->malaysian_points < $request->points) {
+                return response()->json([
+                    'success'   => false,
+                    'message'   => 'لا تمتلك ما يكفي في رصيد نقاطك الماليزي'
+                ]);;
+            }
+        }
+        if($request->convert_to == 'me')
+        { $user->balance = $user->balance + $request->points;}
+        else {
+            $client = Client::findOrFail($request->convert_to);
+            if($request->points_type == 'saudi_points') {
+                $client->update([
+                    'saudi_points' => $client->saudi_points + $request->points,
+                ]);
+            } else if($request->points_type == 'malaysian_points') {
+                $client->update([
+                    'malaysian_points' => $client->malaysian_points + $request->points,
+                ]);
+            }
+        }
+
+
+
+        if($request->points_type == 'saudi_points') {
+            $user->update([
+                'saudi_points' => $user->saudi_points - $request->points,
+            ]);
+        } else if($request->points_type == 'malaysian_points') {
+            $user->update([
+                'malaysian_points' => $user->malaysian_points - $request->points,
+            ]);
+        }
+        $user->save();
+        if ($user->save()) {
+            return response()->json([
+                'success'   => true,
+                'message'   => 'تم تحويل النقاط بنجاح'
+            ]);
+        }
+        else {
+            return response()->json([
+                'success'   => false,
+                'message'   => 'حدث خطأ ما'
+            ]);        }
+
+       /*  $club_point = ClubPoint::findOrFail($request->el);
 		if($club_point->convert_status == 0) {
 
             $amount = 0;
@@ -174,12 +231,7 @@ class ClubPointController extends Controller
 
 			$club_point->convert_status = 1;
 		}
+ */
 
-        if ($club_point->save()) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
     }
 }
