@@ -30,6 +30,25 @@ use Illuminate\Support\Facades\URL;
 
 class ProductController extends Controller
 {
+    public function updateSort(Request $request)
+    {
+        $product = Product::findOrFail($request->id);
+        $newSort = $request->sort ? intval($request->sort) : null;
+        // تحقق من عدم تكرار الرقم
+        if ($newSort && Product::where('sort', $newSort)->where('id', '!=', $product->id)->exists()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => __('This order number is already used for another product.')
+            ]);
+        }
+        $product->sort = $newSort;
+        $product->save();
+        return response()->json([
+            'status' => 'success',
+            'message' => __('Product order updated successfully.')
+        ]);
+    }
+
     protected $productService;
     protected $productTaxService;
     protected $productFlashDealService;
@@ -236,6 +255,8 @@ class ProductController extends Controller
             'lang', 'name', 'unit', 'description', 'product_id'
         ]));
 
+
+
         flash(translate('Product has been inserted successfully'))->success();
 
         Artisan::call('view:clear');
@@ -349,6 +370,8 @@ class ProductController extends Controller
                 'name', 'unit', 'description'
             ])
         );
+
+
 
         flash(translate('Product has been updated successfully'))->success();
 

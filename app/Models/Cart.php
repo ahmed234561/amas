@@ -9,6 +9,27 @@ use Illuminate\Database\Eloquent\Model;
 class Cart extends Model
 {
     protected $guarded = ['id'];
+
+    // Add price mutator to ensure we never save zero prices
+    public function setPriceAttribute($value)
+    {
+        if ($value <= 0) {
+            // Check for special price
+            if (auth()->check() && $this->product_id) {
+                $special_price = \App\Models\UserSpecialPrice::where('user_id', auth()->id())
+                    ->where('product_id', $this->product_id)
+                    ->where('special_price', '>', 0)
+                    ->first();
+
+                if ($special_price) {
+                    $this->attributes['price'] = $special_price->special_price;
+                    return;
+                }
+            }
+        }
+        $this->attributes['price'] = $value;
+    }
+
     protected $fillable = [
         'address_id',
         'price',

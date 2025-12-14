@@ -221,25 +221,46 @@
             </table>
         @else
             <!-- Without Wholesale -->
-            @if (home_price($detailedProduct) != home_discounted_price($detailedProduct))
-                <div class="row no-gutters mb-3">
-                    <div class="col-sm-2">
-                        <div class="text-secondary fs-14 fw-400">{{ translate('Price') }}</div>
-                    </div>
-                    <div class="col-sm-10">
-                        <div class="d-flex align-items-center">
-                            <!-- Discount Price -->
+            @php
+                $special_price = auth()->check() ? $detailedProduct->getSpecialPriceForUser(auth()->id()) : null;
+            @endphp
+
+            <div class="row no-gutters mb-3">
+                <div class="col-sm-2">
+                    <div class="text-secondary fs-14 fw-400">{{ translate('Price') }}</div>
+                </div>
+                <div class="col-sm-10">
+                    <div class="d-flex align-items-center">
+                        @if($special_price)
+                            <!-- Special Price -->
                             <strong class="fs-16 fw-700 text-primary">
-                                {{ home_discounted_price($detailedProduct) }}
+                                {{ single_price($special_price) }}
                             </strong>
-                            <!-- Home Price -->
+                            <!-- Regular Price -->
                             <del class="fs-14 opacity-60 ml-2">
                                 {{ home_price($detailedProduct) }}
                             </del>
-                            <!-- Unit -->
-                            @if ($detailedProduct->unit != null)
-                                <span class="opacity-70 ml-1">/{{ $detailedProduct->getTranslation('unit') }}</span>
+                        @else
+                            @if (home_price($detailedProduct) != home_discounted_price($detailedProduct))
+                                <!-- Discount Price -->
+                                <strong class="fs-16 fw-700 text-primary">
+                                    {{ home_discounted_price($detailedProduct) }}
+                                </strong>
+                                <!-- Home Price -->
+                                <del class="fs-14 opacity-60 ml-2">
+                                    {{ home_price($detailedProduct) }}
+                                </del>
+                            @else
+                                <!-- Regular Price -->
+                                <strong class="fs-16 fw-700 text-primary">
+                                    {{ home_price($detailedProduct) }}
+                                </strong>
                             @endif
+                        @endif
+                        <!-- Unit -->
+                        @if ($detailedProduct->unit != null)
+                            <span class="opacity-70 ml-1">/{{ $detailedProduct->getTranslation('unit') }}</span>
+                        @endif
                             <!-- Discount percentage -->
                             @if (discount_in_percentage($detailedProduct) > 0)
                                 <span class="bg-primary ml-2 fs-11 fw-700 text-white w-35px text-center p-1"

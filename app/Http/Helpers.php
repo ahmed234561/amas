@@ -309,11 +309,12 @@ if (!function_exists('cart_product_price')) {
                 $discount_applicable = true;
             }
 
-            if (check_discount($product,$discount_applicable)) {
-                if ($product->discount_type == 'percent') {
-                    $price -= ($price * $product->discount) / 100;
-                } elseif ($product->discount_type == 'amount') {
-                    $price -= $product->discount;
+            if (check_discount($product, $discount_applicable) && Auth::check()) {
+                $special_price = \App\Models\UserSpecialPrice::where('user_id', Auth::id())
+                                                        ->where('product_id', $product->id)
+                                                        ->first();
+                if ($special_price) {
+                    $price = $special_price->special_price;
                 }
             }
         } else {
@@ -650,22 +651,24 @@ if (!function_exists('home_discounted_price')) {
     }
 }
 
-function check_discount($product,$discount_applicable)
+function check_discount($product, $discount_applicable)
 {
-
-    if($discount_applicable)
-    {
-        $boo = false;
-        foreach ($product->stocks as $one) {
-            if (Auth::check() && trim($one->sku) == Auth::user()->email)
-                $boo = true;
-        }
-
-        if($boo)
-            return true;
-
+    if(!Auth::check()) {
+        return $discount_applicable;
     }
-    return false;
+
+    // First check for special price
+    $special_price = \App\Models\UserSpecialPrice::where('user_id', Auth::id())
+                                                ->where('product_id', $product->id)
+                                                ->where('special_price', '>', 0)
+                                                ->first();
+
+    if ($special_price && $special_price->special_price > 0) {
+        return true;
+    }
+
+    // If no special price, then check regular discount
+    return $discount_applicable;
 }
 
 //Shows Base Price
@@ -692,6 +695,7 @@ if (!function_exists('home_base_price_by_stock_id')) {
 if (!function_exists('home_base_price')) {
     function home_base_price($product, $formatted = true)
     {
+        // دائماً نستخدم السعر الأساسي للمنتج للسعر المشطوب
         $price = $product->unit_price;
         $tax = 0;
 
@@ -703,6 +707,7 @@ if (!function_exists('home_base_price')) {
             }
         }
         $price += $tax;
+
         return $formatted ? format_price(convert_price($price)) : convert_price($price);
     }
 }
@@ -753,28 +758,43 @@ if (!function_exists('home_discounted_base_price_by_stock_id')) {
 if (!function_exists('home_discounted_base_price')) {
     function home_discounted_base_price($product, $formatted = true)
     {
+        // First check for special price
         $price = $product->unit_price;
-        $tax = 0;
 
-        $discount_applicable = false;
-
-        if ($product->discount_start_date == null) {
-            $discount_applicable = true;
-        } elseif (
-            strtotime(date('d-m-Y H:i:s')) >= $product->discount_start_date &&
-            strtotime(date('d-m-Y H:i:s')) <= $product->discount_end_date
-        ) {
-            $discount_applicable = true;
-        }
-
-        if (check_discount($product,$discount_applicable)) {
-            if ($product->discount_type == 'percent') {
-                $price -= ($price * $product->discount) / 100;
-            } elseif ($product->discount_type == 'amount') {
-                $price -= $product->discount;
+        if (Auth::check()) {
+            $special_price = \App\Models\UserSpecialPrice::where('user_id', Auth::id())
+                                                        ->where('product_id', $product->id)
+                                                        ->where('special_price', '>', 0)
+                                                        ->first();
+            if ($special_price) {
+                $price = $special_price->special_price;
             }
         }
 
+        // If no special price exists, check for regular discounts
+        if (!isset($special_price)) {
+            $discount_applicable = false;
+
+            if ($product->discount_start_date == null) {
+                $discount_applicable = true;
+            } elseif (
+                strtotime(date('d-m-Y H:i:s')) >= $product->discount_start_date &&
+                strtotime(date('d-m-Y H:i:s')) <= $product->discount_end_date
+            ) {
+                $discount_applicable = true;
+            }
+
+            if ($discount_applicable) {
+                if ($product->discount_type == 'percent') {
+                    $price -= ($price * $product->discount) / 100;
+                } elseif ($product->discount_type == 'amount') {
+                    $price -= $product->discount;
+                }
+            }
+        }
+
+        // Add tax calculation
+        $tax = 0;
         foreach ($product->taxes as $product_tax) {
             if ($product_tax->tax_type == 'percent') {
                 $tax += ($price * $product_tax->tax) / 100;
@@ -783,7 +803,6 @@ if (!function_exists('home_discounted_base_price')) {
             }
         }
         $price += $tax;
-
 
         return $formatted ? format_price(convert_price($price)) : convert_price($price);
     }

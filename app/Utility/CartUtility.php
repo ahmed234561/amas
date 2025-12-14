@@ -30,21 +30,48 @@ class CartUtility
 
     public static function get_price($product, $product_stock, $quantity)
     {
-        $price = $product_stock->price;
-        if ($product->auction_product == 1) {
-            $price = $product->bids->max('amount');
-        }
-
-        if ($product->wholesale_product) {
-            $wholesalePrice = $product_stock->wholesalePrices->where('min_qty', '<=', $quantity)
-                ->where('max_qty', '>=', $quantity)
+        // Check for special price first if user is authenticated - return it exactly as is
+        if (auth()->check()) {
+            $specialPrice = $product->userSpecialPrices()
+                ->where('user_id', auth()->id())
+                ->where('special_price', '>', 0)
                 ->first();
-            if ($wholesalePrice) {
-                $price = $wholesalePrice->price;
+
+            if ($specialPrice) {
+                \Log::info('Using special price without modifications in CartUtility', [
+                    'product_id' => $product->id,
+                    'special_price' => $specialPrice->special_price,
+                    'user_id' => auth()->id()
+                ]);
+                return floatval($specialPrice->special_price);
             }
         }
 
-        $price = self::discount_calculation($product, $price);
+        // If no special price, continue with regular pricing
+        $price = floatval($product_stock->price);
+
+        if ($product->auction_product == 1) {
+            $price = floatval($product->bids->max('amount'));
+        }
+
+        if ($product->wholesale_product) {
+            $wholesalePrice = $product_stock->wholesalePrices
+                ->where('min_qty', '<=', $quantity)
+                ->where('max_qty', '>=', $quantity)
+                ->first();
+            if ($wholesalePrice) {
+                $price = floatval($wholesalePrice->price);
+            }
+        }
+
+        // Only apply discounts for regular prices
+        $price = floatval(self::discount_calculation($product, $price));
+
+        \Log::info('Final regular price in CartUtility', [
+            'product_id' => $product->id,
+            'final_price' => $price
+        ]);
+
         return $price;
     }
 
@@ -84,22 +111,48 @@ class CartUtility
         return $tax;
     }
 
-    public static function save_cart_data($cart, $product, $price, $tax, $quantity)
-    {
-        $cart->quantity = $quantity;
-        $cart->product_id = $product->id;
-        $cart->owner_id = $product->user_id;
-        $cart->price = $price;
-        $cart->tax = $tax;
-        $cart->product_referral_code = null;
+public static function save_cart_data($cart, $product, $price, $tax, $quantity)
+{
+    // تحقق من وجود سعر خاص مباشرة من DB
+    if (auth()->check()) {
+        $special_price = \App\Models\UserSpecialPrice::where('user_id', auth()->id())
+            ->where('product_id', $product->id)
+            ->where('special_price', '>', 0)
+            ->first();
 
-        if (Cookie::has('referred_product_id') && Cookie::get('referred_product_id') == $product->id) {
-            $cart->product_referral_code = Cookie::get('product_referral_code');
+        if ($special_price) {
+            $price = floatval($special_price->special_price); // استبدال السعر الخاص
         }
-
-        // Cart::create($data);
-        $cart->save();
     }
+
+    // تحويل السعر إلى عدد عشري وتحقق من صحته
+    $price = floatval($price);
+
+    if ($price <= 0) {
+        throw new \Exception('لا يمكن حفظ سعر صفر أو سالب في السلة');
+    }
+
+    // حفظ البيانات
+    $cart->quantity = $quantity;
+    $cart->product_id = $product->id;
+    $cart->owner_id = $product->user_id;
+    $cart->price = $price;
+    $cart->tax = 0;
+    $cart->product_referral_code = null;
+
+    if (Cookie::has('referred_product_id') && Cookie::get('referred_product_id') == $product->id) {
+        $cart->product_referral_code = Cookie::get('product_referral_code');
+    }
+
+    $cart->save();
+
+    \Log::info('تم حفظ البيانات في السلة:', [
+        'cart_id' => $cart->id,
+        'price' => $cart->price,
+        'product_id' => $cart->product_id
+    ]);
+}
+
 
     public static function check_auction_in_cart($carts)
     {

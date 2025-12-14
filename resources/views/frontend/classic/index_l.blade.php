@@ -188,59 +188,128 @@ $(document).ready(function() {
 <script>
 
     // Add to cart functionality
-    function addToCart2(productId) {
-        @if (Auth::check() && Auth::user()->user_type != 'customer')
-            AIZ.plugins.notify('warning', "{{ translate('Please Login as a customer to add products to the Cart.') }}");
-            return false;
-        @endif
+    // function addToCart2(productId) {
+    //     @if (Auth::check() && Auth::user()->user_type != 'customer')
+    //         AIZ.plugins.notify('warning', "{{ translate('Please Login as a customer to add products to the Cart.') }}");
+    //         return false;
+    //     @endif
 
-        var quantityInput = $('#product-row-' + productId + ' .quantity-input');
-        var pointsType = $('#product-row-' + productId + ' .target_points');
-        var client_id = $('#product-row-' + productId + ' .client_id');
-        var quantity = parseInt(quantityInput.val()) || 1;
+    //     var row = $('#product-row-' + productId);
+    //     var quantityInput = row.find('.quantity-input');
+    //     var pointsType = row.find('.target_points');
+    //     var client_id = row.find('.client_id');
+    //     var quantity = parseInt(quantityInput.val()) || 1;
 
-        if(isNaN(quantity) || quantity < 1) {
-            AIZ.plugins.notify('warning', "{{ translate('Please enter a valid quantity') }}");
-            return false;
-        }
+    //     // Get special price if it exists
+    //     @if(Auth::check())
+    //         var specialPrice = row.find('.special-price').data('price');
+    //     console.log('Special Price:', specialPrice);
+    //     @endif
 
-        $('.c-preloader').show();
-        $.ajax({
-            type: "POST",
-            url: '{{ route('cart.addToCart') }}',
-            data: {
-                _token: '{{ csrf_token() }}',
-                id: productId,
-                quantity: quantity,
-                client_id: client_id.val(),
-                target_points: pointsType.val()
-            },
-            success: function(data) {
-                $('.c-preloader').hide();
-                if(data.status == 1) {
-                    if(data.modal_view) {
-                        $('#addToCart-modal-body').html(data.modal_view);
-                    }
-                    if(data.nav_cart_view) {
-                        updateNavCart(data.nav_cart_view, data.cart_count);
-                    }
-                    AIZ.plugins.notify('success', "{{ translate('Product added to cart successfully') }}");
-                } else {
-                    if(data.modal_view) {
-                        $('#addToCart-modal-body').html(data.modal_view);
-                        $('#addToCart').modal('show');
-                    }
-                    AIZ.plugins.notify('danger', data.message || "{{ translate('Something went wrong') }}");
-                }
-            },
-            error: function(xhr) {
-                $('.c-preloader').hide();
-                var errorMessage = xhr.responseJSON && xhr.responseJSON.message
-                    ? xhr.responseJSON.message
-                    : "{{ translate('Something went wrong') }}";
-                AIZ.plugins.notify('danger', errorMessage);
-            }
-        });
+    //     if(isNaN(quantity) || quantity < 1) {
+    //         AIZ.plugins.notify('warning', "{{ translate('Please enter a valid quantity') }}");
+    //         return false;
+    //     }
+
+    //     $('.c-preloader').show();
+
+    //     $.ajax({
+    //         type: "POST",
+    //         url: '{{ route('cart.addToCart') }}',
+    //         data: {
+    //             _token: '{{ csrf_token() }}',
+    //             id: productId,
+    //             quantity: quantity,
+    //             client_id: client_id.val(),
+    //             target_points: pointsType.val(),
+    //             special_price: $('input[name="special_price_' + productId + '"]').val()
+
+    //         },
+    //         success: function(data) {
+    //             $('.c-preloader').hide();
+    //             if(data.status == 1) {
+    //                 if(data.modal_view) {
+    //                     $('#addToCart-modal-body').html(data.modal_view);
+    //                 }
+    //                 if(data.nav_cart_view) {
+    //                     updateNavCart(data.nav_cart_view, data.cart_count);
+    //                 }
+    //                 AIZ.plugins.notify('success', "{{ translate('Product added to cart successfully') }}");
+    //             } else {
+    //                 if(data.modal_view) {
+    //                     $('#addToCart-modal-body').html(data.modal_view);
+    //                     $('#addToCart').modal('show');
+    //                 }
+    //                 AIZ.plugins.notify('danger', data.message || "{{ translate('Something went wrong') }}");
+    //             }
+    //         },
+    //         error: function(xhr) {
+    //             $('.c-preloader').hide();
+    //             var errorMessage = xhr.responseJSON && xhr.responseJSON.message
+    //                 ? xhr.responseJSON.message
+    //                 : "{{ translate('Something went wrong') }}";
+    //             AIZ.plugins.notify('danger', errorMessage);
+    //         }
+    //     });
+    // }
+  function addToCart2(productId) {
+    @if (Auth::check() && Auth::user()->user_type != 'customer')
+        // AIZ.plugins.notify('warning', "{{ translate('Please Login as a customer to add products to the Cart.') }}");
+        // return false;
+    @endif
+
+    var row = $('#product-row-' + productId);
+    var quantityInput = row.find('.quantity-input');
+    var pointsType = row.find('.target_points');
+    var client_id = row.find('.client_id');
+    var quantity = parseInt(quantityInput.val()) || 1;
+
+    if(isNaN(quantity) || quantity < 1) {
+        AIZ.plugins.notify('warning', "{{ translate('Please enter a valid quantity') }}");
+        return false;
     }
+
+    $('.c-preloader').show();
+
+    $.ajax({
+        type: "POST",
+        url: '{{ route('cart.addToCart') }}',
+        data: {
+            _token: '{{ csrf_token() }}',
+            id: productId,
+            quantity: quantity,
+            client_id: client_id.val(),
+            target_points: pointsType.val()
+            // لا ترسل special_price من هنا
+        },
+        success: function(data) {
+            $('.c-preloader').hide();
+            if(data.status == 1) {
+                if(data.modal_view) {
+                    $('#addToCart-modal-body').html(data.modal_view);
+                }
+                if(data.nav_cart_view) {
+                    updateNavCart(data.nav_cart_view, data.cart_count);
+                }
+                AIZ.plugins.notify('success', "{{ translate('Product added to cart successfully') }}");
+            } else {
+                if(data.modal_view) {
+                    $('#addToCart-modal-body').html(data.modal_view);
+                    $('#addToCart').modal('show');
+                }
+                AIZ.plugins.notify('danger', data.message || "{{ translate('Something went wrong') }}");
+            }
+        },
+        error: function(xhr) {
+            $('.c-preloader').hide();
+            var errorMessage = xhr.responseJSON && xhr.responseJSON.message
+                ? xhr.responseJSON.message
+                : "{{ translate('Something went wrong') }}";
+            AIZ.plugins.notify('danger', errorMessage);
+        }
+    });
+}
+
+
 </script>
 @endsection

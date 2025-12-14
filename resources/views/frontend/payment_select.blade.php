@@ -76,6 +76,8 @@
                                                 <div class="row gutters-5 d-none d-lg-flex border-bottom mb-3 pb-3 text-secondary fs-12">
                                                     <div class="col-md-5">{{ translate('Product')}}</div>
                                                     <div class="col-md-1">{{ translate('Qty')}}</div>
+
+                                                    <div class="col-md-6">{{ translate('User Info') }}</div>
                                                     <div class="col-md-6">{{ translate('User Info') }}</div>
                                                 </div>
                                                 <!-- Cart Items -->
@@ -117,11 +119,11 @@
                                                                     @endif
                                                                 </div>
                                                                 <!-- Remove From Cart -->
-                                                                <div class="col-md-auto col-6 order-5 order-md-0 text-right">
+                                                                <div class="col-md-auto col-6 order-5 order-md-0 text-right "style="display: none;">
 
                                                                     @for ($i = 1; $i <= $cartItem['quantity']; $i++)
 
-                                                                        <select class="form-control rounded-0 selectpicker" data-minimum-results-for-search="Infinity" id="name_{{$key+1}}_{{ $i }}">
+                                                                        <select class="d-hidden form-control rounded-0 selectpicker" data-minimum-results-for-search="Infinity" id="name_{{$key+1}}_{{ $i }}">
                                                                             <option value="">{{ translate('Me') }}</option>
                                                                             @foreach($tickets as $ticket)
                                                                                 <option value="{{ $ticket->subject }}">{{ $ticket->subject }}</option>
@@ -137,7 +139,34 @@
 
 
                                                                 </div>
-                                                            </div>
+
+                                                                 <div class="col-md-auto col-6 order-5 order-md-0 text-right">
+  {{-- @for ($i = 1; $i <= $cartItem['quantity']; $i++)
+                                                                        <p>{{ $cartItem['client_id'].""}}</p>
+                                                                        {{-- <select class="form-control rounded-0 selectpicker" data-minimum-results-for-search="Infinity" id="name_{{$key+1}}_{{ $i }}"> --}}
+                                                                            {{-- <option value="">{{ translate('Me') }}</option> --}}
+                                                                            {{-- @foreach($tickets as $ticket) --}}
+                                                                                {{-- <option value="{{ $cartItem['client_id '] }}">{{  $cartItem['client_id '] }}</option> --}}
+                                                                            {{-- @endforeach --}}
+                                                                        {{-- </select> --}}
+{{--
+                                                                        @if($cartItem['quantity'] != $i)
+                                                                            <br>
+                                                                            <br>
+                                                                        @endif
+
+                                                                    @endfor  --}}
+
+                                                                    @if (Auth::check() && Auth::user()->postal_code != '')
+                                                                            <?php
+                                $clienttt = \App\Models\Client::where('id', $cartItem['client_id'] )->first();
+                                ?>                                              @if ($clienttt == null){{"لي"}}
+                                                                             @else
+                                                                            <p>{{ $clienttt->name.' '. $clienttt->zip_code}}</p>
+                                                                            @endif
+                                                                            @endif
+                                                                </div>
+                                                            {{-- </div> --}}
                                                         </li>
                                                     @endforeach
                                                 </ul>
@@ -471,7 +500,7 @@
                                                 <input value="authorizenet" class="online_payment" type="radio"
                                                     name="payment_option" checked>
                                                 <span class="d-block aiz-megabox-elem rounded-0 p-3">
-                                                    <img src="{{ static_asset('assets/img/cards/authorizenet.png') }}"
+                                                    <img src="{{ static_asset('assets/img/cards/phonepe.png') }}"
                                                         class="img-fit mb-2">
                                                     <span class="d-block text-center">
                                                         <span

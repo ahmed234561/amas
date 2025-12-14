@@ -29,7 +29,7 @@
             <div class="col">
                 <h5 class="mb-md-0 h6">{{ translate('All Product') }}</h5>
             </div>
-            
+
             @can('product_delete')
                 <div class="dropdown mb-2 mb-md-0">
                     <button class="btn border dropdown-toggle" type="button" data-toggle="dropdown">
@@ -40,7 +40,7 @@
                     </div>
                 </div>
             @endcan
-            
+
             @if($type == 'Seller')
             <div class="col-md-2 ml-auto">
                 <select class="form-control form-control-sm aiz-selectpicker mb-2 mb-md-0" id="user_id" name="user_id" onchange="sort_products()">
@@ -80,7 +80,7 @@
                 </div>
             </div>
         </div>
-    
+
         <div class="card-body">
             <table class="table aiz-table mb-0">
                 <thead>
@@ -112,6 +112,7 @@
                         @endif
                         <th data-breakpoints="lg">{{translate('Featured')}}</th>
                         <th data-breakpoints="sm" class="text-right">{{translate('Options')}}</th>
+                       <th>{{ translate('Product Order') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -169,7 +170,7 @@
                                     <span class="badge badge-inline badge-danger">{{ translate('Low') }}</span>
                                 @endif
                             @endif
-                            
+
                         </td>
                         <td>
                             <label class="aiz-switch aiz-switch-success mb-0">
@@ -223,6 +224,18 @@
                                 </a>
                             @endcan
                         </td>
+                       <td>
+                           <select class="form-control form-control-sm product-sort-select" data-product-id="{{ $product->id }}">
+                               @php
+                                   $total = $products->total();
+                                   $usedSorts = $products->pluck('sort')->filter()->toArray();
+                               @endphp
+                               <option value="">{{ translate('No Order') }}</option>
+                               @for($i = 1; $i <= $total; $i++)
+                                   <option value="{{ $i }}" @if($product->sort == $i) selected @endif @if($product->sort != $i && in_array($i, $usedSorts)) disabled @endif>{{ $i }}</option>
+                               @endfor
+                           </select>
+                       </td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -246,19 +259,44 @@
 
 @section('script')
     <script type="text/javascript">
-        
+       $(document).on('change', '.product-sort-select', function() {
+           var productId = $(this).data('product-id');
+           var sortValue = $(this).val();
+           var select = $(this);
+           $.ajax({
+               url: '{{ route('products.updateSort') }}',
+               type: 'POST',
+               data: {
+                   _token: '{{ csrf_token() }}',
+                   id: productId,
+                   sort: sortValue
+               },
+               success: function(response) {
+                   if(response.status === 'success') {
+                       AIZ.plugins.notify('success', response.message);
+                       location.reload();
+                   } else {
+                       AIZ.plugins.notify('danger', response.message);
+                   }
+               },
+               error: function() {
+                   AIZ.plugins.notify('danger', '{{ translate('Something went wrong') }}');
+               }
+           });
+       });
+
         $(document).on("change", ".check-all", function() {
             if(this.checked) {
                 // Iterate each checkbox
                 $('.check-one:checkbox').each(function() {
-                    this.checked = true;                        
+                    this.checked = true;
                 });
             } else {
                 $('.check-one:checkbox').each(function() {
-                    this.checked = false;                       
+                    this.checked = false;
                 });
             }
-          
+
         });
 
         $(document).ready(function(){
@@ -298,7 +336,7 @@
                 }
             });
         }
-        
+
         function update_approved(el){
             if(el.checked){
                 var approved = 1;
@@ -307,8 +345,8 @@
                 var approved = 0;
             }
             $.post('{{ route('products.approved') }}', {
-                _token      :   '{{ csrf_token() }}', 
-                id          :   el.value, 
+                _token      :   '{{ csrf_token() }}',
+                id          :   el.value,
                 approved    :   approved
             }, function(data){
                 if(data == 1){
@@ -340,7 +378,7 @@
         function sort_products(el){
             $('#sort_products').submit();
         }
-        
+
         function bulk_delete() {
             var data = new FormData($('#sort_products')[0]);
             $.ajax({

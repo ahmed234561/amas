@@ -182,7 +182,7 @@ class CheckoutController extends Controller
                     $cartItem['carrier_id'] = $request['carrier_id_' . $product->user_id];
                     $cartItem['shipping_cost'] = getShippingCost($carts, $key, $cartItem['carrier_id']);
                 }
-
+                // $cartItem['shipping_type'] = 'home_delivery';
                 $shipping += $cartItem['shipping_cost'];
 
                 $cartItem->save();
@@ -354,9 +354,10 @@ class CheckoutController extends Controller
     public function order_confirmed()
     {
         $combined_order = CombinedOrder::findOrFail(Session::get('combined_order_id'));
-
+     $order = Order::where("user_id",auth()->user()->id)->get()->last() ;
         Cart::where('user_id', $combined_order->user_id)
             ->delete();
+
 
         //Session::forget('club_point');
         //Session::forget('combined_order_id');
@@ -365,6 +366,6 @@ class CheckoutController extends Controller
         //     NotificationUtility::sendOrderPlacedNotification($order);
         // }
 
-        return view('frontend.order_confirmed', compact('combined_order'));
+        return view('frontend.order_confirmed', compact('combined_order','order'));
     }
 }

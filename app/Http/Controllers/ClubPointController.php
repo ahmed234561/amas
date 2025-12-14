@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\pointsLog;
 use Illuminate\Http\Request;
 use App\Models\BusinessSetting;
 use App\Models\ClubPointDetail;
@@ -29,7 +30,8 @@ class ClubPointController extends Controller
 
     public function index()
     {
-        $club_points = ClubPoint::latest()->paginate(15);
+        $club_points = pointsLog::with('client', 'user')->paginate(12);
+
         return view('club_points.index', compact('club_points'));
     }
 
@@ -146,6 +148,9 @@ class ClubPointController extends Controller
         return view('club_points.club_point_details', compact('club_point_details'));
     }
 
+
+
+
     public function convert_point_into_wallet(Request $request)
     {
         $user = Auth::user();
@@ -166,18 +171,35 @@ class ClubPointController extends Controller
             }
         }
         if($request->convert_to == 'me')
-        { $user->balance = $user->balance + $request->points;}
-        else {
+        {
+            $user->balance = $user->balance + $request->points;
+            pointsLog::create([
+                'user_id' => $user->id,
+                'amount' => $request->points,
+                'type' => 'self',
+                'points_type' => $request->points_type,
+            ]);
+        } else {
+
             $client = Client::findOrFail($request->convert_to);
+
             if($request->points_type == 'saudi_points') {
                 $client->update([
                     'saudi_points' => $client->saudi_points + $request->points,
                 ]);
+
             } else if($request->points_type == 'malaysian_points') {
                 $client->update([
                     'malaysian_points' => $client->malaysian_points + $request->points,
                 ]);
             }
+            pointsLog::create([
+                'user_id' => $user->id,
+                'amount' => $request->points,
+                'type' => 'client',
+                'points_type' => $request->points_type,
+                'client_id' => $client->id,
+            ]);
         }
 
 

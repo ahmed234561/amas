@@ -28,7 +28,7 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
-    
+
     public function categories()
     {
         return $this->belongsToMany(Category::class, 'product_categories');
@@ -103,9 +103,32 @@ class Product extends Model
     {
         return $this->hasMany(Cart::class);
     }
-    
+
     public function scopeIsApprovedPublished($query)
     {
         return $query->where('approved', '1')->where('published', 1);
     }
+
+    public function userSpecialPrices()
+    {
+        return $this->hasMany(UserSpecialPrice::class);
+    }
+
+    public function getSpecialPriceForUser($userId = null)
+    {
+        try {
+            if (!$userId) {
+                return $this->unit_price;
+            }
+
+            $specialPrice = $this->userSpecialPrices()
+                               ->where('user_id', $userId)
+                               ->first();
+
+            return $specialPrice ? $specialPrice->special_price : $this->unit_price;
+        } catch (\Exception $e) {
+            return $this->unit_price;
+        }
+    }
+
 }

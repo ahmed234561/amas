@@ -9,6 +9,55 @@
         </div>
     </div>
 @endif
+
+@php
+    $riyadh = json_decode(get_setting('shipping_prices_riyadh'), true) ?: [];
+    $other = json_decode(get_setting('shipping_prices_other'), true) ?: [];
+@endphp
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h6 class="mb-0">{{ translate('Shipping Price Options') }}</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="mb-2">{{ translate('Riyadh Areas') }}</h6>
+                @if(count($riyadh))
+                    <ul class="list-group">
+                        @foreach($riyadh as $item)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ $item['area'] ?? '-' }}
+                                <span class="badge badge-primary badge-pill">{{ single_price($item['price'] ?? 0) }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text-muted">{{ translate('No settings found') }}</p>
+                @endif
+            </div>
+            <div class="col-md-6">
+                <h6 class="mb-2">{{ translate('Other Provinces') }}</h6>
+                @if(count($other))
+                    <ul class="list-group">
+                        @foreach($other as $item)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ $item['area'] ?? '-' }}
+                                <span class="badge badge-primary badge-pill">{{ single_price($item['price'] ?? 0) }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text-muted">{{ translate('No settings found') }}</p>
+                @endif
+            </div>
+        </div>
+        <div class="mt-3">
+            <a href="{{ url('/admin/settings/shipping-prices') }}" class="btn btn-sm btn-primary">{{ translate('Configure Shipping Prices') }}</a>
+        </div>
+    </div>
+</div>
+
 @can('admin_dashboard')
 <div class="row gutters-10">
     <div class="col-lg-6">
@@ -385,5 +434,63 @@
             }
         }
     });
+</script>
+
+<!-- إضافة: إدراج رابط "أسعار الشحن" في السايدبار عند تحميل الصفحة -->
+<script>
+(function(){
+    // عناصر السايدبار المحتملة في القالب
+    var selectors = ['.aiz-side-nav', '.aiz-side-nav-list', '#sidebar', '.sidebar-menu', '.menu-vertical'];
+    var container = null;
+    for (var i = 0; i < selectors.length; i++) {
+        var el = document.querySelector(selectors[i]);
+        if (el) { container = el; break; }
+    }
+    if (!container) return; // لا نفعل شيئًا إن لم نعثُر على السايدبار
+
+    // تأكد أن الرابط غير مكرر
+    if (container.querySelector('a[href="/admin/settings/shipping-prices"]')) return;
+
+    // عنصر القائمة الجديد مع قائمة فرعية لـ Riyadh و Other
+    var li = document.createElement('li');
+    li.className = 'aiz-side-nav-item';
+    li.innerHTML = '<a href="/admin/settings/shipping-prices" class="aiz-side-nav-link">\
+        <i class="las la-truck aiz-side-nav-icon"></i>\
+        <span class="aiz-side-nav-text">{{ __("Shipping Prices") }}</span>\
+        <span class="aiz-side-nav-arrow" style="float:right; margin-left:8px;">▼</span>\
+    </a>\
+    <ul class="aiz-side-nav-list" style="display:none; margin-top:6px; padding-left:12px;">\
+        <li class="aiz-side-nav-item"><a href="/admin/settings/shipping-prices?section=riyadh" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{ __("Riyadh Areas") }}</span></a></li>\
+        <li class="aiz-side-nav-item"><a href="/admin/settings/shipping-prices?section=other" class="aiz-side-nav-link"><span class="aiz-side-nav-text">{{ __("Other Provinces") }}</span></a></li>\
+    </ul>';
+
+    // إدراج العنصر في القائمة
+    if (container.firstElementChild) {
+        container.insertBefore(li, container.firstElementChild.nextSibling);
+    } else {
+        container.appendChild(li);
+    }
+
+    // إضافة سلوك تبديل العرض للقائمة الفرعية عند النقر على العنصر الرئيسي
+    try {
+        var mainLink = li.querySelector('a.aiz-side-nav-link');
+        var submenu = li.querySelector('ul.aiz-side-nav-list');
+        var arrow = li.querySelector('.aiz-side-nav-arrow');
+
+        mainLink.addEventListener('click', function(e){
+            e.preventDefault();
+            if (submenu.style.display === 'none' || submenu.style.display === '') {
+                submenu.style.display = 'block';
+                if (arrow) arrow.textContent = '▲';
+            } else {
+                submenu.style.display = 'none';
+                if (arrow) arrow.textContent = '▼';
+            }
+        });
+    } catch (err) {
+        // تجاهل أي أخطاء بسيطة لضمان عدم كسر الصفحة
+        console.error(err);
+    }
+})();
 </script>
 @endsection

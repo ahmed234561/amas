@@ -1,7 +1,7 @@
 @extends('frontend.layouts.app')
 
 @section('content')
-
+ 
     <!-- Steps -->
     <section class="pt-5 mb-0">
         <div class="container">
@@ -53,7 +53,8 @@
             </div>
         </div>
     </section>
-
+ 
+                         
     <!-- Order Confirmation -->
     <section class="py-4">
         <div class="container text-left">
@@ -63,6 +64,7 @@
                         $first_order = $combined_order->orders->first()
                     @endphp
                     <!-- Order Confirmation Text-->
+                     
                     <div class="text-center py-4 mb-0">
                         <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" class="mb-3">
                             <g id="Group_23983" data-name="Group 23983" transform="translate(-978 -481)">
@@ -74,6 +76,7 @@
                             </g>
                         </svg>
                         <h1 class="mb-2 fs-28 fw-500 text-success">{{ translate('Thank You for Your Order!')}}</h1>
+                        <h1 class="mb-2 fs-28 fw-500 text-success"><div class="row " style="display: flow;"> <a class="btn btn-success text-center d-lg-block" href="{{ route('invoice.download', $order->id) }}" title="{{ translate('Download Invoice') }}">تنزيل الفاتورة</a></div></h1>
                         <p class="fs-13 text-soft-dark">
                             {{ translate('A copy of your order summary has been sent to') }}
                             <strong>
@@ -281,4 +284,8 @@
             </div>
         </div>
     </section>
+     <section class="py-4">
+                            <div class="row">
+                            </div>
+                           </section>
 @endsection

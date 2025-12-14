@@ -132,6 +132,8 @@
                         <div class="col-3">
                             <div class="text-secondary fs-14 fw-400 mt-2 ">نوع النقاط</div>
                         </div>
+                        @if (Auth::check() && Auth::user()->postal_code != '')
+
                         <div class="col-9">
                             <div class="aiz-radio-inline">
                                 <label class="aiz-megabox pl-0 mr-2 mb-0">
@@ -141,6 +143,7 @@
                                         value="saudi">
                                     <span class="aiz-megabox-elem rounded-0 d-flex align-items-center justify-content-center py-1 px-3">
                                         النقاط السعودي
+                                      {{  $product->earn_point}}
                                     </span>
                                 </label>
                             </div>
@@ -152,10 +155,23 @@
                                         value="malaysian">
                                     <span class="aiz-megabox-elem rounded-0 d-flex align-items-center justify-content-center py-1 px-3">
                                         النقاط الماليزي
+                                        {{  $product->malaysian_points}}
                                     </span>
                                 </label>
                             </div>
+
+
+                          <div class="aiz-radio-inline">
+                            <select name="client_id" class="form-control client_id">
+                                <option value="">انا شخصيا</option>
+                                @foreach ($clients as $client)
+                                    <option value="{{ $client->id }}">{{ $client->name }}</option>
+                                @endforeach
+                                </select>
+                                 </div>
+
                         </div>
+                        @endif
                     </div>
                     @csrf
                     <input type="hidden" name="id" value="{{ $product->id }}">
@@ -298,4 +314,58 @@
     $('#option-choice-form input').on('change', function () {
         getVariantPrice();
     });
+     function addToCart2(productId) {
+        @if (Auth::check() && Auth::user()->user_type != 'customer')
+            AIZ.plugins.notify('warning', "{{ translate('Please Login as a customer to add products to the Cart.') }}");
+            return false;
+        @endif
+
+        var quantityInput = $('#product-row-' + productId + ' .quantity-input');
+        var pointsType = $('#product-row-' + productId + ' .target_points');
+        var client_id = $('#product-row-' + productId + ' .client_id');
+        var quantity = parseInt(quantityInput.val()) || 1;
+
+        if(isNaN(quantity) || quantity < 1) {
+            AIZ.plugins.notify('warning', "{{ translate('Please enter a valid quantity') }}");
+            return false;
+        }
+
+        $('.c-preloader').show();
+        $.ajax({
+            type: "POST",
+            url: '{{ route('cart.addToCart') }}',
+            data: {
+                _token: '{{ csrf_token() }}',
+                id: productId,
+                quantity: quantity,
+                client_id: client_id.val(),
+                target_points: pointsType.val()
+            },
+            success: function(data) {
+                $('.c-preloader').hide();
+                if(data.status == 1) {
+                    if(data.modal_view) {
+                        $('#addToCart-modal-body').html(data.modal_view);
+                    }
+                    if(data.nav_cart_view) {
+                        updateNavCart(data.nav_cart_view, data.cart_count);
+                    }
+                    AIZ.plugins.notify('success', "{{ translate('Product added to cart successfully') }}");
+                } else {
+                    if(data.modal_view) {
+                        $('#addToCart-modal-body').html(data.modal_view);
+                        $('#addToCart').modal('show');
+                    }
+                    AIZ.plugins.notify('danger', data.message || "{{ translate('Something went wrong') }}");
+                }
+            },
+            error: function(xhr) {
+                $('.c-preloader').hide();
+                var errorMessage = xhr.responseJSON && xhr.responseJSON.message
+                    ? xhr.responseJSON.message
+                    : "{{ translate('Something went wrong') }}";
+                AIZ.plugins.notify('danger', errorMessage);
+            }
+        });
+    }
 </script>

@@ -190,6 +190,13 @@
 {{--                                    </a>--}}
 {{--                                </li>--}}
                             @endcan
+                            @can('show_all_products')
+                                <li class="aiz-side-nav-item">
+                                    <a href="{{route('special-prices.index')}}" class="aiz-side-nav-link {{ areActiveRoutes(['special-prices.index']) }}">
+                                        <span class="aiz-side-nav-text">{{translate('Special Prices')}}</span>
+                                    </a>
+                                </li>
+                            @endcan
                         </ul>
                     </li>
                 @endcanany

@@ -42,50 +42,142 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    // public function index(Request $request)
+    // {
+    //     if(Auth::check() == false){
+    //     return  redirect()->route('user.login');
+    //     }
+    //     $query = Product::where('published', 1);
+
+    //     // Search functionality
+    //     if ($request->filled('search')) {
+
+    //         $searchTerm = $request->search;
+
+    //         $query->where(function($q) use ($searchTerm) {
+    //             $q->where('name', 'like', "%{$searchTerm}%")
+    //             ->orWhere('tags', 'like', "%{$searchTerm}%")
+    //             ->orWhereHas('categories', function($q) use ($searchTerm) {
+    //                 $q->where('name', 'like', "%{$searchTerm}%");
+    //             });
+    //         });
+    //     }
+
+    //     // Order and paginate
+    //     $products = $query->orderBy('created_at', 'desc')->paginate(20);
+    //     // return response()->json($products);
+    //     // AJAX response
+    //     if ($request->ajax()) {
+    //         if ($products->isEmpty()) {
+    //             return response()->json([
+    //                 'status' => 'empty',
+    //                 'message' => __('No products found')
+    //             ]);
+    //         }
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'html' => view('frontend.classic.partials.search_products', compact('products'))->render()
+    //         ]);
+    //     }
+
+    //     // Normal page load
+    //     $lang = get_system_language() ? get_system_language()->code : null;
+    //     $featured_categories = Cache::rememberForever('featured_categories', function () {
+    //         return Category::with('bannerImage')->where('featured', 1)->get();
+    //     });
+
+    //     return view('frontend.'.get_setting('homepage_select').'.index_l', compact('featured_categories', 'lang', 'products'));
+    // }
     public function index(Request $request)
-    {
-        $query = Product::where('published', 1);
+{
+    if (!Auth::check()) {
+        return redirect()->route('user.login');
+    }
 
-        // Search functionality
-        if ($request->filled('search')) {
+    $query = Product::where('published', 1);
 
-            $searchTerm = $request->search;
+    // 🔍 البحث
+    if ($request->filled('search')) {
+        $searchTerm = $request->search;
+        $query->where(function($q) use ($searchTerm) {
+            $q->where('name', 'like', "%{$searchTerm}%")
+              ->orWhere('tags', 'like', "%{$searchTerm}%")
+              ->orWhereHas('categories', function($q) use ($searchTerm) {
+                  $q->where('name', 'like', "%{$searchTerm}%");
+              });
+        });
+    }
 
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('name', 'like', "%{$searchTerm}%")
-                ->orWhere('tags', 'like', "%{$searchTerm}%")
-                ->orWhereHas('categories', function($q) use ($searchTerm) {
-                    $q->where('name', 'like', "%{$searchTerm}%");
-                });
-            });
-        }
+    // 🧩 نجلب جميع المنتجات مرتبة حسب التاريخ
+    $allProducts = $query->orderBy('created_at', 'desc')->get();
 
-        // Order and paginate
-        $products = $query->orderBy('created_at', 'desc')->paginate(20);
-        // return response()->json($products);
-        // AJAX response
-        if ($request->ajax()) {
-            if ($products->isEmpty()) {
-                return response()->json([
-                    'status' => 'empty',
-                    'message' => __('No products found')
-                ]);
+    // 🧮 نقسمهم إلى قسمين: لديهم sort، وليس لديهم
+    $sortedProducts = $allProducts->filter(fn($p) => !is_null($p->sort) && $p->sort > 0)
+                                  ->sortBy('sort'); // ترتيبهم حسب sort
+    $unsortedProducts = $allProducts->filter(fn($p) => is_null($p->sort) || $p->sort == 0)
+                                    ->values();
+
+    // 🧠 ندمجهم: نضع المنتجات ذات sort في أماكنها الصحيحة
+    $finalList = collect();
+    $insertedIndexes = [];
+
+    foreach ($sortedProducts as $product) {
+        $position = $product->sort - 1; // لأن الترتيب يبدأ من 1 وليس 0
+        $finalList->put($position, $product);
+        $insertedIndexes[] = $position;
+    }
+
+    // 🧩 نملأ الفراغات بالمنتجات التي ليس لديها sort
+    $unsortedIndex = 0;
+    for ($i = 0; $i < ($allProducts->count()); $i++) {
+        if (!$finalList->has($i)) {
+            if (isset($unsortedProducts[$unsortedIndex])) {
+                $finalList->put($i, $unsortedProducts[$unsortedIndex]);
+                $unsortedIndex++;
             }
+        }
+    }
 
+    // 🪄 إعادة ترتيب المفاتيح لتكون متسلسلة (0, 1, 2, 3, ...)
+    $finalList = $finalList->sortKeys()->values();
+
+    // 📦 تحويل إلى Pagination يدوي
+    $perPage = 20;
+    $currentPage = $request->get('page', 1);
+    $pagedData = $finalList->forPage($currentPage, $perPage);
+    $products = new \Illuminate\Pagination\LengthAwarePaginator(
+        $pagedData,
+        $finalList->count(),
+        $perPage,
+        $currentPage,
+        ['path' => $request->url(), 'query' => $request->query()]
+    );
+
+    // 📡 استجابة AJAX
+    if ($request->ajax()) {
+        if ($products->isEmpty()) {
             return response()->json([
-                'status' => 'success',
-                'html' => view('frontend.classic.partials.search_products', compact('products'))->render()
+                'status' => 'empty',
+                'message' => __('No products found')
             ]);
         }
 
-        // Normal page load
-        $lang = get_system_language() ? get_system_language()->code : null;
-        $featured_categories = Cache::rememberForever('featured_categories', function () {
-            return Category::with('bannerImage')->where('featured', 1)->get();
-        });
-
-        return view('frontend.'.get_setting('homepage_select').'.index_l', compact('featured_categories', 'lang', 'products'));
+        return response()->json([
+            'status' => 'success',
+            'html' => view('frontend.classic.partials.search_products', compact('products'))->render()
+        ]);
     }
+
+    // 🌐 العرض العادي
+    $lang = get_system_language() ? get_system_language()->code : null;
+    $featured_categories = Cache::rememberForever('featured_categories', function () {
+        return Category::with('bannerImage')->where('featured', 1)->get();
+    });
+
+    return view('frontend.'.get_setting('homepage_select').'.index_l', compact('featured_categories', 'lang', 'products'));
+}
+
 
     public function load_todays_deal_section()
     {

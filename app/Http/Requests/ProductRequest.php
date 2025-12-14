@@ -35,6 +35,10 @@ class ProductRequest extends FormRequest
         $rules['unit']         = 'sometimes|required';
         $rules['min_qty']      = 'sometimes|required|numeric';
         $rules['unit_price']    = 'sometimes|required|numeric';
+
+        // Special pricing validation
+        $rules['special_users.*'] = 'sometimes|exists:users,id';
+        $rules['special_prices.*'] = 'required_with:special_users.*|numeric|min:0';
         if ($this->get('discount_type') == 'amount') {
             $rules['discount'] = 'sometimes|required|numeric|lt:unit_price';
         } else {
@@ -72,7 +76,11 @@ class ProductRequest extends FormRequest
             'starting_bid.required'     => translate('Starting Bid is required'),
             'starting_bid.numeric'      => translate('Starting Bid must be numeric'),
             'starting_bid.required'     => translate('Minimum Starting Bid is 1'),
-            'auction_date_range.required' => translate('Auction Date Range is required')
+            'auction_date_range.required' => translate('Auction Date Range is required'),
+            'special_users.*.exists'    => translate('Selected user does not exist'),
+            'special_prices.*.required_with' => translate('Please enter a price for selected user'),
+            'special_prices.*.numeric'  => translate('Special price must be a number'),
+            'special_prices.*.min'      => translate('Special price cannot be negative')
         ];
     }
 

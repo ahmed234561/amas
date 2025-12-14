@@ -268,7 +268,7 @@ Route::group(['middleware' => ['user', 'verified', 'unbanned']], function () {
     Route::get('/all-notifications', [NotificationController::class, 'index'])->name('all-notifications');
 });
 
-Route::group(['middleware' => ['customer', 'verified', 'unbanned']], function () {
+Route::group(['middleware' => ['verified', 'unbanned']], function () {
 
     // Checkout Routs
     Route::group(['prefix' => 'checkout'], function () {
@@ -485,3 +485,27 @@ Route::get('/product-details/{slug}', function($slug) {
 });
 Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.addToCart');
 Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity'])->name('cart.updateQuantity');
+Route::get('/clear', function (\Illuminate\Http\Request $request) {
+
+    // تحقق أن المستخدم مسجل دخول
+    if (!Auth::check()) {
+        abort(403, 'غير مصرح لك');
+    }
+
+    // تسجيل العملية في اللوج
+    \Log::info('ClearAll triggered by user id: '.Auth::id());
+
+    // مسح جميع الكاشات
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+
+    // تسجيل خروج المستخدم
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    // إعادة التوجيه للصفحة الرئيسية مع رسالة نجاح
+    return redirect('/')->with('status', 'تم مسح الكاش وتم تسجيل الخروج.');
+})->name('clear.all.logout')->middleware('auth');

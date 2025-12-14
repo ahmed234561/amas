@@ -98,7 +98,7 @@
                                             </div>
                                         </div>
                                         <!-- Brand -->
-                                        <div class="form-group row" id="brand">
+                                        {{-- <div class="form-group row" id="brand">
                                             <label class="col-xxl-3 col-from-label fs-13">{{translate('Brand')}}</label>
                                             <div class="col-xxl-9">
                                                 <select class="form-control aiz-selectpicker" name="brand_id" id="brand_id" data-live-search="true">
@@ -109,41 +109,91 @@
                                                 </select>
                                                 <small class="text-muted">{{translate("You can choose a brand if you'd like to display your product by brand.")}}</small>
                                             </div>
-                                        </div>
+                                        </div> --}}
+                                        <div class="form-group row" id="brand" style="display: none;">
+    <label class="col-xxl-3 col-from-label fs-13">{{ translate('Brand') }}</label>
+    <div class="col-xxl-9">
+        <select class="form-control aiz-selectpicker" name="brand_id" id="brand_id" data-live-search="true">
+            <option value="">{{ translate('Select Brand') }}</option>
+            @foreach (\App\Models\Brand::all() as $brand)
+                <option value="{{ $brand->id }}"
+                    @selected(old('brand_id', [2]) == $brand->id)>
+                    {{ $brand->getTranslation('name') }}
+                </option>
+            @endforeach
+        </select>
+        <small class="text-muted">{{ translate("You can choose a brand if you'd like to display your product by brand.") }}</small>
+    </div>
+</div>
                                         <!-- Unit -->
-                                        <div class="form-group row">
+                                        {{-- <div class="form-group row d-none">
                                             <label class="col-xxl-3 col-from-label fs-13">{{translate('Unit')}} <span class="text-danger">*</span></label>
                                             <div class="col-xxl-9">
                                                 <input type="text" class="form-control" name="unit" value="{{ old('unit') }}" placeholder="{{ translate('Unit (e.g. KG, Pc etc)') }}">
                                             </div>
-                                        </div>
+                                        </div> --}}
+                                        <div class="form-group row d-none">
+    <label class="col-xxl-3 col-from-label fs-13">{{translate('Unit')}} <span class="text-danger">*</span></label>
+    <div class="col-xxl-9">
+        <!-- الحقل المخفي مع القيمة الافتراضية -->
+        <input type="hidden" name="unit" value="Pc">
+
+        <!-- الحقل الظاهر (معطل) لعرض القيمة للتوثيق فقط -->
+        <input type="text" class="form-control" value="Pc" placeholder="{{ translate('Unit (e.g. KG, Pc etc)') }}" disabled>
+        <small class="text-muted d-block">{{ translate('Default unit is set to "Pc" (Piece)') }}</small>
+    </div>
+</div>
                                         <!-- Weight -->
-                                        <div class="form-group row">
+                                        {{-- <div class="form-group row">
                                             <label class="col-xxl-3 col-from-label fs-13">{{translate('Weight')}} <small>({{ translate('In Kg') }})</small></label>
                                             <div class="col-xxl-9">
                                                 <input type="number" class="form-control" name="weight" step="0.01" value="0.00" placeholder="0.00">
                                             </div>
+                                        </div> --}}
+                                        <div class="form-group row d-none"> <!-- d-none لإخفاء الحقل -->
+                                        <label class="col-xxl-3 col-from-label fs-13">{{translate('Weight')}} <small>({{ translate('In Kg') }})</small></label>
+                                        <div class="col-xxl-9">
+                                            <input type="hidden" name="weight" value="1.00"> <!-- القيمة المخفية المرسلة -->
+                                            <input type="number" class="form-control" step="0.01" value="1.00" placeholder="0.00" disabled>
+                                            <small class="text-muted d-block">{{ translate('Default weight is set to 1.00 kg') }}</small>
                                         </div>
+                                    </div>
                                         <!-- Quantity -->
-                                        <div class="form-group row">
+                                        {{-- <div class="form-group row">
                                             <label class="col-xxl-3 col-from-label fs-13">{{translate('Minimum Purchase Qty')}} <span class="text-danger">*</span></label>
                                             <div class="col-xxl-9">
                                                 <input type="number" lang="en" class="form-control" name="min_qty" value="1" min="1">
                                                 <small class="text-muted">{{translate("The minimum quantity needs to be purchased by your customer.")}}</small>
                                             </div>
-                                        </div>
+                                        </div> --}}
+                                                                    <div class="form-group row d-none"> <!-- d-none لإخفاء الحقل -->
+                                <label class="col-xxl-3 col-from-label fs-13">{{translate('Minimum Purchase Qty')}} <span class="text-danger">*</span></label>
+                                <div class="col-xxl-9">
+                                    <input type="hidden" name="min_qty" value="1"> <!-- القيمة المخفية المرسلة -->
+                                    <input type="number" lang="en" class="form-control" value="1" min="1" disabled>
+                                    <small class="text-muted d-block">{{translate("Default minimum quantity is set to 1")}}</small>
+                                </div>
+                            </div>
                                         <!-- Tags -->
-                                        <div class="form-group row">
+                                        {{-- <div class="form-group row">
                                             <label class="col-xxl-3 col-from-label fs-13">{{translate('Tags')}} <span class="text-danger">*</span></label>
                                             <div class="col-xxl-9">
                                                 <input type="text" class="form-control aiz-tag-input" name="tags[]" placeholder="{{ translate('Type and hit enter to add a tag') }}">
                                                 <small class="text-muted">{{translate('This is used for search. Input those words by which cutomer can find this product.')}}</small>
                                             </div>
-                                        </div>
-
+                                        </div> --}}
+                                             <div class="form-group row d-none">
+    <label class="col-xxl-3 col-from-label fs-13">{{translate('Tags')}} <span class="text-danger">*</span></label>
+    <div class="col-xxl-9">
+        <!-- سنرسل القيمة كJSON string كما يتوقعها السيرفر -->
+        <input type="hidden" name="tags[]" value='[{"value":"dxn"}]'>
+        <input type="text" class="form-control aiz-tag-input" placeholder="{{ translate('Type and hit enter to add a tag') }}" value="dxn" disabled>
+        <small class="text-muted d-block">{{translate('Default tag is set to "dxn"')}}</small>
+    </div>
+</div>
                                         @if (addon_is_activated('pos_system'))
                                         <!-- Barcode -->
-                                        <div class="form-group row">
+                                        <div class="form-group row d-none">
                                             <label class="col-xxl-3 col-from-label fs-13">{{translate('Barcode')}}</label>
                                             <div class="col-xxl-9">
                                                 <input type="text" class="form-control" name="barcode" value="{{ old('barcode') }}" placeholder="{{ translate('Barcode') }}">
@@ -166,7 +216,9 @@
                                     </div>
 
                                     <!-- Product Category -->
-                                    <div class="col-xxl-5 col-xl-6">
+
+{{--
+ <div class="col-xxl-5 col-xl-6">
                                         <div class="card">
                                             <div class="card-header">
                                                 <h5 class="mb-0 h6">{{ translate('Product Category') }}</h5>
@@ -192,6 +244,45 @@
                                             </div>
                                         </div>
                                     </div>
+
+ --}}
+
+<div class="col-xxl-5 col-xl-6 d-none">
+    <!-- إخفاء القسم كاملاً ولكن مع إرسال القيم المطلوبة -->
+    @php
+        // الحصول على أول تصنيف متاح
+        $firstCategory = $categories->first();
+
+        // إذا لم يكن هناك تصنيفات، يمكنك إنشاء قيمة افتراضية (اختياري)
+        if(!$firstCategory) {
+            $firstCategory = (object)['id' => 1]; // قيمة افتراضية احتياطية
+        }
+    @endphp
+
+    <!-- إرسال القيم المطلوبة كحقول مخفية -->
+    <input type="hidden" name="category_id" value="{{ $firstCategory->id }}">
+    <input type="hidden" name="category_ids[]" value="{{ $firstCategory->id }}">
+
+    <!-- العناصر الأصلية (مخفية) -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0 h6">{{ translate('Product Category') }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="h-300px overflow-auto c-scrollbar-light">
+                <ul class="hummingbird-treeview-converter list-unstyled">
+                    @foreach ($categories as $category)
+                    <li id="{{ $category->id }}">{{ $category->getTranslation('name') }}</li>
+                        @foreach ($category->childrenCategories as $childCategory)
+                            @include('backend.product.products.child_category', ['child_category' => $childCategory])
+                        @endforeach
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
                                 </div>
 
                                 <!-- Description -->
@@ -204,7 +295,7 @@
                             </div>
 
                             <!-- Status -->
-                            <h5 class="mb-3 mt-5 pb-3 fs-17 fw-700" style="border-bottom: 1px dashed #e4e5eb;">{{translate('Status')}}</h5>
+                            <h5 class="mb-3 mt-5 pb-3 fs-17 fw-700 d-none" style="border-bottom: 1px dashed #e4e5eb;">{{translate('Status')}}</h5>
                             <div class="w-100">
                                 <!-- Featured -->
                                 <div class="form-group row" style="display: none">
@@ -251,14 +342,14 @@
                                     </div>
                                 </div>
                                 <!-- Discount -->
-                                <div class="form-group row">
+                                <div class="form-group row d-none">
                                     <label class="col-md-3 col-from-label">{{translate('Discount')}}</label>
                                     <div class="col-xxl-9">
                                         <input type="number" name="flash_discount" value="0" min="0" step="0.01" class="form-control">
                                     </div>
                                 </div>
                                 <!-- Discount Type -->
-                                <div class="form-group row">
+                                <div class="form-group row d-none">
                                     <label class="col-md-3 col-from-label">{{translate('Discount Type')}}</label>
                                     <div class="col-xxl-9">
                                         <select class="form-control aiz-selectpicker" name="flash_discount_type" id="flash_discount_type">
@@ -271,8 +362,8 @@
                             </div>
 
                             <!-- Vat & TAX -->
-                            <h5 class="mb-3 mt-4 pb-3 fs-17 fw-700" style="border-bottom: 1px dashed #e4e5eb;">{{translate('Vat & TAX')}}</h5>
-                            <div class="w-100">
+                            <h5 class="mb-3 mt-4 pb-3 fs-17 fw-700 d-none" style="border-bottom: 1px dashed #e4e5eb;">{{translate('Vat & TAX')}}</h5>
+                            <div class="w-100 d-none">
                                 @foreach(\App\Models\Tax::where('tax_status', 1)->get() as $tax)
                                     <label for="name">
                                         {{$tax->name}}
@@ -335,7 +426,7 @@
                                 </div>
                             </div>
                             <!-- Video Provider -->
-                            <div class="form-group row">
+                            <div class="form-group row d-none">
                                 <label class="col-md-3 col-from-label">{{translate('Video Provider')}}</label>
                                 <div class="col-md-9">
                                     <select class="form-control aiz-selectpicker" name="video_provider" id="video_provider">
@@ -346,7 +437,7 @@
                                 </div>
                             </div>
                             <!-- Video Link -->
-                            <div class="form-group row">
+                            <div class="form-group row d-none">
                                 <label class="col-md-3 col-from-label">{{translate('Video Link')}}</label>
                                 <div class="col-md-9">
                                     <input type="text" class="form-control" name="video_link" value="{{ old('video_link') }}" placeholder="{{ translate('Video Link') }}">
@@ -354,7 +445,7 @@
                                 </div>
                             </div>
                             <!-- PDF Specification -->
-                            <div class="form-group row">
+                            <div class="form-group row d-none">
                                 <label class="col-md-3 col-form-label" for="signinSrEmail">{{translate('PDF Specification')}}</label>
                                 <div class="col-md-9">
                                     <div class="input-group" data-toggle="aizuploader" data-type="document">
@@ -426,15 +517,101 @@
                                         <input type="number" lang="en" min="0" value="0" step="0.01" placeholder="{{ translate('Unit price') }}" name="unit_price" class="form-control">
                                     </div>
                                 </div>
-                                <!-- Discount Date Range -->
+
+                                <!-- Special Prices (per-user) -->
                                 <div class="form-group row">
+                                    <label class="col-md-3 col-from-label">{{ translate('Special Prices for specific users') }}</label>
+                                    <div class="col-md-9">
+                                        @php
+                                            $customers = \App\Models\User::where('user_type', 'customer')->get();
+                                        @endphp
+
+                                        <div id="special-prices-container">
+                                            {{-- صفوف الأسعار الخاصة ستضاف هنا ديناميكياً --}}
+                                        </div>
+
+                                        <button type="button" id="add-special-price-row" class="btn btn-sm btn-info mt-2">
+                                            {{ translate('Add special price') }}
+                                        </button>
+
+                                        <small class="text-muted d-block mt-2">
+                                            {{ translate('Add a specific price for one user. The price will be used only for that user.') }}
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <script>
+                                    (function(){
+                                        const users = @json($customers->map(function($u){ return ['id'=>$u->id,'name'=>$u->name]; }));
+                                        const container = document.getElementById('special-prices-container');
+
+                                        function createRow(userId = '', price = '') {
+                                            const row = document.createElement('div');
+                                            row.className = 'd-flex mb-2 special-price-row';
+
+                                            const userSelect = document.createElement('select');
+                                            userSelect.name = 'special_users[]';
+                                            userSelect.className = 'form-control form-control-sm mr-2';
+                                            userSelect.style.width = '40%';
+                                            const emptyOpt = document.createElement('option');
+                                            emptyOpt.value = '';
+                                            emptyOpt.text = '{{ translate("Select user") }}';
+                                            userSelect.appendChild(emptyOpt);
+                                            users.forEach(u => {
+                                                const opt = document.createElement('option');
+                                                opt.value = u.id;
+                                                opt.text = u.name;
+                                                if (u.id == userId) opt.selected = true;
+                                                userSelect.appendChild(opt);
+                                            });
+
+                                            const priceInput = document.createElement('input');
+                                            priceInput.type = 'number';
+                                            priceInput.name = 'special_prices[]';
+                                            priceInput.step = '0.01';
+                                            priceInput.min = '0';
+                                            priceInput.className = 'form-control form-control-sm mr-2';
+                                            priceInput.style.width = '30%';
+                                            priceInput.placeholder = '{{ translate("Price") }}';
+                                            priceInput.value = price;
+
+                                            const removeBtn = document.createElement('button');
+                                            removeBtn.type = 'button';
+                                            removeBtn.className = 'btn btn-sm btn-danger';
+                                            removeBtn.innerText = '×';
+                                            removeBtn.onclick = function(){ row.remove(); };
+
+                                            row.appendChild(userSelect);
+                                            row.appendChild(priceInput);
+                                            row.appendChild(removeBtn);
+
+                                            container.appendChild(row);
+                                        }
+
+                                        document.getElementById('add-special-price-row').addEventListener('click', function(){
+                                            createRow();
+                                        });
+
+                                        // إذا كان لديك قيم قديمة (مثلاً بعد redirect مع old inputs) يمكنك إعادة بناءها هنا
+                                        @if(old('special_users'))
+                                            const oldUsers = @json(old('special_users'));
+                                            const oldPrices = @json(old('special_prices'));
+                                            for (let i=0;i<oldUsers.length;i++){
+                                                createRow(oldUsers[i], oldPrices[i] ?? '');
+                                            }
+                                        @endif
+
+                                    })();
+                                </script>
+                                <!-- Discount Date Range -->
+                                <div class="form-group row d-none">
                                     <label class="col-sm-3 control-label" for="start_date">{{translate('Discount Date Range')}}</label>
                                     <div class="col-sm-9">
                                       <input type="text" class="form-control aiz-date-range" name="date_range" placeholder="{{translate('Select Date')}}" data-time-picker="true" data-format="DD-MM-Y HH:mm:ss" data-separator=" to " autocomplete="off">
                                     </div>
                                 </div>
                                 <!-- Discount -->
-                                <div class="form-group row">
+                                <div class="form-group row d-none">
                                     <label class="col-md-3 col-from-label">{{translate('Discount')}} <span class="text-danger">*</span></label>
                                     <div class="col-md-6">
                                         <input type="number" lang="en" min="0" value="0" step="0.01" placeholder="{{ translate('Discount') }}" name="discount" class="form-control">
@@ -454,7 +631,7 @@
                                             {{translate('Saudi Point')}}
                                         </label>
                                         <div class="col-md-6">
-                                            <input type="number" lang="en" min="0" value="0" step="1" placeholder="{{ translate('1') }}" name="earn_point" class="form-control">
+                                            <input type="number" lang="en" min="0" value="0" step="0.01" placeholder="{{ translate('1') }}" name="earn_point" class="form-control">
                                         </div>
                                     </div>
                                     <div class="form-group row">
@@ -462,7 +639,7 @@
                                             {{translate('Malaysian Point')}}
                                         </label>
                                         <div class="col-md-6">
-                                            <input type="number" lang="en" min="0" value="0" step="1" placeholder="{{ translate('1') }}" name="malaysian_points" class="form-control">
+                                            <input type="number" lang="en" min="0" value="0" step="0.01" placeholder="{{ translate('1') }}" name="malaysian_points" class="form-control">
                                         </div>
                                     </div>
                                 @endif
@@ -476,7 +653,7 @@
                                         </div>
                                     </div>
                                     <!-- SKU -->
-                                    <div class="form-group row">
+                                    <div class="form-group row d-none">
                                         <label class="col-md-3 col-from-label">
                                             {{translate('SKU')}}
                                         </label>
@@ -486,7 +663,7 @@
                                     </div>
                                 </div>
                                 <!-- External link -->
-                                <div class="form-group row">
+                                <div class="form-group row d-none">
                                     <label class="col-md-3 col-from-label">
                                         {{translate('External link')}}
                                     </label>
@@ -496,7 +673,7 @@
                                     </div>
                                 </div>
                                 <!-- External link button text -->
-                                <div class="form-group row">
+                                <div class="form-group row d-none">
                                     <label class="col-md-3 col-from-label">
                                         {{translate('External link button text')}}
                                     </label>
@@ -613,7 +790,7 @@
                                         <label class="col-md-3 col-from-label">{{translate('Cash On Delivery')}}</label>
                                         <div class="col-md-9">
                                             <label class="aiz-switch aiz-switch-success mb-0">
-                                                <input type="checkbox" name="cash_on_delivery" value="1" checked="">
+                                                <input type="hidden" name="cash_on_delivery" value="1" checked="">
                                                 <span></span>
                                             </label>
                                         </div>
@@ -715,6 +892,7 @@
 <script src="{{ static_asset('assets/js/hummingbird-treeview.js') }}"></script>
 
 <script type="text/javascript">
+
 
     $(document).ready(function() {
         $("#treeview").hummingbird();

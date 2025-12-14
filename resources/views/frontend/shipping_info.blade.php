@@ -74,7 +74,7 @@
                                                             <span class="fs-14 text-dark fw-500 ml-2 col">{{ $address->address }}</span>
                                                         </div>
                                                         <div class="row">
-                                                            <span class="fs-14 text-secondary col-3">{{ translate('Postal Code') }}</span>
+                                                            <span class="fs-14 text-secondary col-3">{{ translate('رابط موقعك الجغرافي') }}</span>
                                                             <span class="fs-14 text-dark fw-500 ml-2 col">{{ $address->postal_code }}</span>
                                                         </div>
                                                         <div class="row">

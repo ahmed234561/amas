@@ -11,11 +11,15 @@
                         <th class="text-center" style="width: 15%;">الكمية</th>
                         <th class="text-center" style="width: 20%;">اسم المنتج</th>
                         <th class="text-center" style="width: 15%;">السعر</th>
+                        @if (Auth::check() && Auth::user()->postal_code != '')
                         <th class="text-center" style="width: 10%;">النقاط السعودي</th>
                         <th class="text-center" style="width: 10%;">النقاط الماليزي</th>
+                        @endif
                         <th class="text-center" style="width: 10%;">تفاصيل</th>
+                         @if (Auth::check() && Auth::user()->postal_code != '')
                         <th class="text-center" style="width: 10%;">نوع النقاط</th>
                         <th class="text-center" style="width: 10%;">الزبون</th>
+                        @endif
                         <th class="text-center" style="width: 15%;">إضافة للسلة</th>
                     </tr>
                 </thead>
@@ -41,9 +45,34 @@
 
                         <!-- السعر -->
                         <td class="text-primary fw-bold text-center">
-                            {{ home_discounted_price($product) }}
-                        </td>
+                            @php
+                                $special_price = null;
+                                if (Auth::check()) {
+                                    $special_price = \App\Models\UserSpecialPrice::where('user_id', Auth::id())
+                                        ->where('product_id', $product->id)
+                                        ->where('special_price', '>', 0)
+                                        ->first();
+                                }
 
+                                // Store the price in data attribute for JavaScript
+                                $display_price = $special_price ? $special_price->special_price : $product->unit_price;
+                            @endphp
+                            <div class="product-price-{{ $product->id }}"
+                                 data-special-price="{{ $special_price ? $special_price->special_price : '' }}"
+                                 data-regular-price="{{ $product->unit_price }}">
+                                @if ($special_price)
+                                    <span class="text-success special-price">
+                                        {{ single_price($special_price->special_price) }}
+                                    </span>
+                                    <del class="text-muted small">{{ home_base_price($product) }}</del>
+                                @else
+                                    <span class="regular-price">
+                                        {{ home_discounted_price($product) }}
+                                    </span>
+                                @endif
+                            </div>
+                        </td>
+ @if (Auth::check() && Auth::user()->postal_code != '')
                         <!-- نقاط المنتج -->
                         <td class="text-center text-muted">
                             {{ $product->earn_point  }}
@@ -51,6 +80,7 @@
                         <td class="text-center text-muted">
                             {{ $product->malaysian_points  }}
                         </td>
+@endif
                         <!-- زر تفاصيل المنتج -->
                         <td class="text-center">
                             <button href="javascript:void(0)" class="btn btn-sm btn-success add-to-cart"
@@ -58,20 +88,27 @@
                                 تفاصيل المنتج
                             </button>
                         </td>
+                         @if (Auth::check() && Auth::user()->postal_code != '')
                         <td class="text-center">
                             <select name="target_points" class="form-control target_points">
                                 <option value="saudi">نقاط سعودي</option>
                                 <option value="malaysian">نقاط ماليزي</option>
                             </select>
                         </td>
+                        @endif
+                         @if (Auth::check() && Auth::user()->postal_code != '')
                         <td class="text-center">
                             <select name="client_id" class="form-control client_id">
-                                <option value="">انا شخصيا</option>
+                                <option value="" selected>انا شخصيا</option>
                                 @foreach ($clients as $client)
-                                    <option value="{{ $client->id }}">{{ $client->name }}</option>
+                                @if (auth()->check() && auth()->user()->id == $client->user_id)
+                                    <option value="{{ $client->id }}" >{{ $client->name }}</option>
+
+                                @endif
                                 @endforeach
                                 </select>
                         </td>
+                        @endif
                         <!-- زر إضافة إلى السلة -->
                         <td class="text-center">
                             @if (count(json_decode($product->choice_options)) == 0)
